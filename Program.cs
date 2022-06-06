@@ -101,6 +101,9 @@ namespace IFT7028_Palletisation
         {
             int RandomSeed = 77;
             var env = new SimSharp.Simulation(RandomSeed);
+            //palettes_encours1.Where(p => ((PaletteStruct)p).num_palette == 2);
+            //var palletisationService = new SimSharp.Resource(env, nbPalettesSurPlancher)
+            //var palletisationService = new SimSharp.ResourcePool(env, (IEnumerable<object>)(System.Collections.IEnumerable)palettes_encours)
             var palletisationService = new SimSharp.ResourcePool(env, (IEnumerable<object>)palettes_encours2)
             {
                 //des metriques
@@ -150,7 +153,9 @@ namespace IFT7028_Palletisation
             }
         }
 
-        
+        //Func<object, bool> selector = palettes_encours => ((IEnumerable<object>)(System.Collections.IEnumerable)palettes_encours).;
+        //Func<object, bool> selector = x => ((IEnumerable<object>)(System.Collections.IEnumerable)x).;
+        //Func<object, bool> selector = x => ((PaletteStruct)x).num_palette == 2;
 
         private IEnumerable<SimSharp.Event> PanneauProcess(PanneauStruct panneau, SimSharp.Simulation env, SimSharp.ResourcePool palletisationService)
         {
