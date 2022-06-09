@@ -14,6 +14,8 @@ namespace IFT7028_Palletisation
     internal class Program
     {
         //******Paramètres******//
+        //private static string xlsxInputFilePathPanneaux = @"C:\Local\E2022\Conception et simulation des systèmes intelligents pour l'industrie 4.0 - (IFT-7028)\Projet\20220603\DataSet.xlsx";
+        //private static string xlsxInputFilePathPalettes = @"C:\Local\E2022\Conception et simulation des systèmes intelligents pour l'industrie 4.0 - (IFT-7028)\Projet\20220603\DataSet.xlsx";
         private static string xlsxInputFilePathPanneaux = @"C:\Local\E2022\Conception et simulation des systèmes intelligents pour l'industrie 4.0 - (IFT-7028)\Projet\20220609\C-3312_DataSet.xlsm";
         private static string xlsxInputFilePathPalettes = @"C:\Local\E2022\Conception et simulation des systèmes intelligents pour l'industrie 4.0 - (IFT-7028)\Projet\20220609\Palette.xlsx";
         //private static string panneauxWorksheet = @"C-3312";
@@ -31,11 +33,11 @@ namespace IFT7028_Palletisation
         //static List<PaletteStruct> palettes_encours1 = new List<PaletteStruct>()
         static List<object> palettes_encours1 = new List<object>()
         {
-            new PaletteStruct() {num_palette = 0, quantity = 0},
-            new PaletteStruct() {num_palette = 0, quantity = 0},
-            new PaletteStruct() {num_palette = 0, quantity = 0},
-            new PaletteStruct() {num_palette = 0, quantity = 0},
-            new PaletteStruct() {num_palette = 0, quantity = 0},
+            new PaletteStruct() {num_palette = 0, quantity = 0, qty_max = 0},
+            new PaletteStruct() {num_palette = 0, quantity = 0, qty_max = 0},
+            new PaletteStruct() {num_palette = 0, quantity = 0, qty_max = 0},
+            new PaletteStruct() {num_palette = 0, quantity = 0, qty_max = 0},
+            new PaletteStruct() {num_palette = 0, quantity = 0, qty_max = 0},
         };
         //******Paramètres******//
 
@@ -55,6 +57,7 @@ namespace IFT7028_Palletisation
         {
             public int num_palette;
             public int quantity;
+            public int qty_max;
         }
 
         //PaletteStruct[] palettes_encours = new PaletteStruct[nbPalettesSurPlancher];
@@ -163,7 +166,7 @@ namespace IFT7028_Palletisation
                 if (indexPalettes_encours != -1)
                 {
                     //Trouvée. Est ce que pas pleine:
-                    if (((PaletteStruct)palettes_encours1[indexPalettes_encours]).quantity < all_palettes.First(x => x.num_palette == ((PaletteStruct)palettes_encours1[indexPalettes_encours]).num_palette).quantity)
+                    if (((PaletteStruct)palettes_encours1[indexPalettes_encours]).quantity < ((PaletteStruct)palettes_encours1[indexPalettes_encours]).qty_max)
                     {
                         insertPanneauInPalette(panneau, indexPalettes_encours, fromTampon);
 
@@ -202,7 +205,7 @@ namespace IFT7028_Palletisation
                 int qtyTotal = 0;
                 try
                 {
-                    qtyTotal = all_palettes.First(x => x.num_palette == palette_encours.num_palette).quantity;
+                    qtyTotal = palette_encours.qty_max;
                 }
                 catch (Exception ex) { }
                 Console.Write(qtyTotal.ToString() + " - ");
@@ -220,6 +223,7 @@ namespace IFT7028_Palletisation
             PaletteStruct pl = ((PaletteStruct)palettes_encours1[indexPalettes_encours]);
             pl.quantity++;
             pl.num_palette = panneau.Num_palette;
+            pl.qty_max = all_palettes.First(x => x.num_palette == panneau.Num_palette).quantity;
             palettes_encours1[indexPalettes_encours] = pl;
             if (fromTampon)
             {
@@ -230,7 +234,7 @@ namespace IFT7028_Palletisation
             ImpressionEtatPalettes();
 
             //Si palette full, on la sort
-            if (((PaletteStruct)palettes_encours1[indexPalettes_encours]).quantity == all_palettes.First(x => x.num_palette == ((PaletteStruct)palettes_encours1[indexPalettes_encours]).num_palette).quantity)
+            if (((PaletteStruct)palettes_encours1[indexPalettes_encours]).quantity == ((PaletteStruct)palettes_encours1[indexPalettes_encours]).qty_max)
             {
                 //TODO: Ajouter Temps de latence
                 //La palette qui remplace sera la première dans le Tampon et on fait le tour du Tampon. Si vide on ajoute une palette libre (0,0)
@@ -244,9 +248,10 @@ namespace IFT7028_Palletisation
                     //ImpressionEtatPalettes();
                     //on met qté à 0 avant d'insérer car on commence la palette
                     PaletteStruct plInit = ((PaletteStruct)palettes_encours1[indexPalettes_encours]);
-                    pl.quantity = 0;
-                    pl.num_palette = pnFromTampon.Num_palette;//Pas nécessaire car faite à l'appel de insertPanneauInPalette
-                    palettes_encours1[indexPalettes_encours] = pl;
+                    plInit.quantity = 0;
+                    plInit.num_palette = pnFromTampon.Num_palette;//xxPas nécessaire car faite à l'appel de insertPanneauInPalette
+                    plInit.qty_max = all_palettes.First(x => x.num_palette == pnFromTampon.Num_palette).quantity;
+                    palettes_encours1[indexPalettes_encours] = plInit;
                     
                     insertPanneauInPalette(pnFromTampon, indexPalettes_encours, true    );
                     //faire le tour du Tampon (sans oublier que si ça s'insert pas ne pas mettre dans Tampon mais plutot supprimer du Tampon
@@ -278,6 +283,7 @@ namespace IFT7028_Palletisation
                     PaletteStruct paletteLibre = new PaletteStruct();
                     paletteLibre.num_palette = 0;
                     paletteLibre.quantity = 0;
+                    paletteLibre.qty_max = 0;
                     palettes_encours1[indexPalettes_encours] = paletteLibre;
                 }
             }
